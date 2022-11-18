@@ -5,10 +5,34 @@ int main(int argc, char **argv) {
   return 0;
 }
 
+t_pattr *create_pattr(char *pattr) {
+  t_pattr *node = (t_pattr *)malloc(sizeof(t_pattr));
+  node->patr = pattr;
+  node->Next = NULL;
+  return node;
+}
+
+void print_list(t_pattr *list) {
+  while (list != NULL) {
+    printf("%s\n", list->patr);
+    list = list->Next;
+  }
+}
+
+void push_back(t_pattr **list, char *pattr) {
+  t_pattr *new_elem = create_pattr(pattr);
+  t_pattr *tmp = *list;
+  while (tmp->Next != NULL) {
+    tmp = tmp->Next;
+  }
+  tmp->Next = new_elem;
+}
+
 void parse_flags(int argc, char **argv) {
   struct options opt = {0};
   int ch = 0;
   char *short_opt = "ce:f:hilnotv";
+  t_pattr *list = create_pattr("HEAD");
   while (-1 != (ch = getopt(argc, argv, short_opt))) {
     switch (ch) {
       case 'c':
@@ -16,6 +40,7 @@ void parse_flags(int argc, char **argv) {
         break;
       case 'e':  //требует паттерн поиска
         opt.e = 1;
+        push_back(&list, optarg);
         break;
       case 'f':  //требуется файл
         opt.f = 1;
@@ -48,6 +73,7 @@ void parse_flags(int argc, char **argv) {
         exit(1);
     }
   }
+  print_list(list);
   print_field(&opt);
 }
 
