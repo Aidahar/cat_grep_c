@@ -25,9 +25,11 @@ struct options {
 };
 
 void parse_flags(int argc, char **argv);
-void print_field(int argc, struct options *opt);
-void read_file(char *file_name, struct options *opt, pattr *list);
+void print_field(int argc, struct options *opt);  // временная функция
+void read_file(int argc, int ind, char **argv, struct options *opt,
+               pattr *list);
 void print_opt(struct options *opt);  // временная функция для принта флагов
-size_t lines_file(FILE *fl);  // временная функция для печати файла построчно
+size_t lines_file(FILE *fl);  // счетчик количества строк в файле
+void check_pattr(pattr *pat, char *list);
 
 #endif  // SRC_s21_grep_H_

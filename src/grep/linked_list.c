@@ -1,5 +1,6 @@
 #include "linked_list.h"
 
+// возвращаем созданный список
 pattr *create(char *lt) {
   pattr *list = malloc(sizeof(pattr));
   list->line = strdup(lt);
@@ -23,7 +24,6 @@ void push_back(pattr **list, char *pat) {
   }
   tmp->next = new_elem;
 }
-
 
 void release(pattr *list) {
   pattr *old = list;
