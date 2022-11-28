@@ -1,6 +1,6 @@
 #ifndef SRC_s21_cat_H_
 #define SRC_s21_cat_H_
-#define _GNU_SOURCE
+#define _POSIX_C_SOURCE 200809L
 
 #include <getopt.h>
 #include <stdio.h>
@@ -23,7 +23,7 @@ void print_b(int *cnt, const char *line);
 void print_e(struct options *opt, int idx, char *line);
 void print_n(int cnt);
 void print_s(struct options *opt, char **line, ssize_t read, size_t size,
-           FILE *file, int *cnt_f);
+             FILE *file, int *cnt_f);
 void print_t(struct options *opt, int idx, char *line);
 void print_v(struct options *opt, int idx, char *line);
 void reader(char **argv, struct options *opt);

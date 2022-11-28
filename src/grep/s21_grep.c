@@ -1,3 +1,8 @@
+/*
+  https://lloydrochester.com/post/c/regex_pcre/
+  https://ru.wikipedia.org/wiki/PCRE
+  https://github.com/PorterV/s21_SimpleBashUtils/blob/develop/src/grep/s21_grep.c
+*/
 #include "s21_grep.h"
 
 int main(int argc, char **argv) {
@@ -5,45 +10,35 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-t_pattr *create_pattr(char *pattr) {
-  t_pattr *node = (t_pattr *)malloc(sizeof(t_pattr));
-  node->patr = pattr;
-  node->Next = NULL;
-  return node;
-}
-
-void print_list(t_pattr *list) {
-  while (list != NULL) {
-    printf("%s\n", list->patr);
-    list = list->Next;
-  }
-}
-
-void push_back(t_pattr **list, char *pattr) {
-  t_pattr *new_elem = create_pattr(pattr);
-  t_pattr *tmp = *list;
-  while (tmp->Next != NULL) {
-    tmp = tmp->Next;
-  }
-  tmp->Next = new_elem;
-}
-
+// парсим флаги
 void parse_flags(int argc, char **argv) {
+  int ch = 0, long_opt = 0;
   struct options opt = {0};
-  int ch = 0;
-  char *short_opt = "ce:f:hilnotv";
-  t_pattr *list = create_pattr("HEAD");
-  while (-1 != (ch = getopt(argc, argv, short_opt))) {
+  char *short_options = ":c+e:+f:+h+i+l+n+o+t+v";
+  static struct option long_options[] = {{NULL, 0, NULL, 0}};
+  pattr *list = NULL;
+  pattr *files = NULL;
+  while (-1 != (ch = getopt_long(argc, argv, short_options, long_options,
+                                 &long_opt))) {
     switch (ch) {
       case 'c':
         opt.c = 1;
         break;
       case 'e':  //требует паттерн поиска
         opt.e = 1;
-        push_back(&list, optarg);
+        if (NULL == list) {
+          list = create(optarg);
+        } else {
+          push_back(&list, optarg);
+        }
         break;
       case 'f':  //требуется файл
         opt.f = 1;
+        if (NULL == files) {
+          files = create(optarg);
+        } else {
+          push_back(&files, optarg);
+        }
         break;
       case 'h':
         opt.h = 1;
@@ -67,26 +62,89 @@ void parse_flags(int argc, char **argv) {
         opt.v = 1;
         break;
       default:
-        fprintf(
-            stderr,
-            "grep [-cefhilnotv] [-e pattern] [-f file] [pattern] [file ...]");
+        fprintf(stderr,
+                "usage: grep [-cefhilnotv] [-e "
+                "pattern] [-f file] [pattern] [file ...]");
         exit(1);
     }
   }
-  print_list(list);
-  print_field(&opt);
+  if (opt.e) {
+    while (optind < argc) {
+      read_file(argv[optind], &opt, list);
+      optind++;
+    }
+  } else {
+    if (NULL == list) {
+      list = create(argv[optind]);
+    } else {
+      push_back(&list, argv[optind]);
+    }
+    optind++;
+    while (optind < argc) {
+      read_file(argv[optind], &opt, list);
+      optind++;
+    }
+  }
+  release(list);
+  release(files);
 }
 
-void print_field(struct options *opt) {
-  printf("FIELDS FLAGS: \n");
-  printf("opt->c: %d\n", opt->c);
-  printf("opt->e: %d\n", opt->e);
-  printf("opt->f: %d\n", opt->f);
-  printf("opt->h: %d\n", opt->h);
-  printf("opt->i: %d\n", opt->i);
-  printf("opt->l: %d\n", opt->l);
-  printf("opt->n: %d\n", opt->n);
-  printf("opt->o: %d\n", opt->o);
-  printf("opt->t: %d\n", opt->t);
-  printf("opt->v: %d\n", opt->v);
+// Временная функция для отображения флагов
+void print_opt(struct options *opt) {
+  printf("opt->c = %d\n", opt->c);
+  printf("opt->e = %d\n", opt->e);
+  printf("opt->f = %d\n", opt->f);
+  printf("opt->h = %d\n", opt->h);
+  printf("opt->i = %d\n", opt->i);
+  printf("opt->l = %d\n", opt->l);
+  printf("opt->n = %d\n", opt->n);
+  printf("opt->o = %d\n", opt->o);
+  printf("opt->t = %d\n", opt->t);
+  printf("opt->v = %d\n", opt->v);
+}
+
+// Временная функция проверяющая флаг с
+void print_field(int argc, struct options *opt) {
+  if (opt->c) {
+    while (argc >= optind) {
+      printf("%s\n", optarg);
+      optind++;
+    }
+  }
+}
+
+// читаем файл
+void read_file(char *file_name, struct options *opt, pattr *list) {
+  FILE *fl = fopen(file_name, "r");
+  if (fl) {
+    char *line = NULL;
+    size_t len, cnt_line, cnt_line_file;
+    len = cnt_line = cnt_line_file = 0;
+    cnt_line_file = lines_file(fl);
+    ssize_t read;
+    fseek(fl, 0, SEEK_SET);
+    while ((read = getline(&line, &len, fl)) != -1) {
+      printf("%s", line);
+      cnt_line++;
+      if (opt->c) {
+      }
+    }
+    free(line);
+    fclose(fl);
+  } else {
+    fprintf(stderr, "grep: %s: No such file or directory", file_name);
+    exit(1);
+  }
+  (void)list;
+}
+
+// счетчик количества строк в файле
+size_t lines_file(FILE *fl) {
+  size_t cnt = 1;
+  char ch = fgetc(fl);
+  while (EOF != ch) {
+    if ('\n' == ch) cnt++;
+    ch = fgetc(fl);
+  }
+  return cnt;
 }

@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-Wall -Wextra -Werror -O3 -std=c11
-TEST=-g -fanalyzer
+TEST=-fanalyzer -fsanitize=address -g -pedantic
 
 all: build
 
@@ -15,9 +15,8 @@ s21_cat_test: s21_cat.o
 s21_cat.o: s21_cat.c
 	${CC} -c s21_cat.c 
 
-
 clean:
-	rm -rf *.o ${BUILD}s21_cat.out s21_cat
+	rm -rf *.o s21_cat
 
 rebuild: clean s21_cat
 

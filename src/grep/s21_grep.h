@@ -1,14 +1,15 @@
 #ifndef SRC_s21_grep_H_
 #define SRC_s21_grep_H_
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#define _POSIX_C_SOURCE 200809L
 
 #include <getopt.h>
-#include <regex.h>
+#include <pcre.h>
+// #include <regex.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "linked_list.h"
 
 struct options {
   unsigned char c : 1;
@@ -23,14 +24,10 @@ struct options {
   unsigned char v : 1;
 };
 
-typedef struct pattr {
-  struct pattr *Next;
-  char *patr;
-} t_pattr;
-
-t_pattr *create_pattr(char *pattr);
 void parse_flags(int argc, char **argv);
-void print_field(struct options *opt);
-void print_list(t_pattr *list);
+void print_field(int argc, struct options *opt);
+void read_file(char *file_name, struct options *opt, pattr *list);
+void print_opt(struct options *opt);  // временная функция для принта флагов
+size_t lines_file(FILE *fl);  // временная функция для печати файла построчно
 
-#endif  // SRC_s21_cat_H_
+#endif  // SRC_s21_grep_H_
