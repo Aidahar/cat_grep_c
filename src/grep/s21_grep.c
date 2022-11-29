@@ -97,10 +97,11 @@ void print_field(int argc, struct options *opt) {
 // читаем файл
 void read_file(int argc, int ind, char **argv, struct options *opt,
                pattr *list) {
+  int cnt_f = argc - ind;
   while (ind < argc) {
     FILE *fl = fopen(argv[ind], "r");
     if (fl) {
-      read_lines(fl, opt, list);
+      read_lines(fl, opt, list, cnt_f, argv[ind]);
       fclose(fl);
     } else {
       fprintf(stderr, "grep: %s: No such file or directory", argv[ind]);
@@ -134,7 +135,8 @@ void check_pattr(pattr **pat, char *list) {
 }
 
 // читаем построчно файл
-void read_lines(FILE *fl, struct options *opt, pattr *list) {
+void read_lines(FILE *fl, struct options *opt, pattr *list, int cht_files,
+                char *file_name) {
   char *line = NULL;
   size_t len = 0, cnt_line = 0, cnt_if_c = 0, cnt_line_file = lines_file(fl);
   ssize_t read;
@@ -148,42 +150,46 @@ void read_lines(FILE *fl, struct options *opt, pattr *list) {
   if (!re) {
     fprintf(stderr, "error pattrn");
   } else {
-    int count = 0;
-    int ovector[30];
-    if (opt->c) {
-      while ((read = getline(&line, &len, fl)) != -1) {
-        cnt_line++;
-        count = pcre_exec(re, NULL, (char *)line, strlen(line), 0,
-                          PCRE_NOTEMPTY, ovector, 30);
-        if (count < 0) {
-          if (opt->v) {
-            printf("%s", line);
-          }
-        } else {
-          if (opt->c) {
-            cnt_if_c++;
-          }
-        }
-      }
-      printf("%ld\n", cnt_if_c);
-    } else {
-      while ((read = getline(&line, &len, fl)) != -1) {
-        cnt_line++;
-        count = pcre_exec(re, NULL, (char *)line, strlen(line), 0,
-                          PCRE_NOTEMPTY, ovector, 30);
-        if (count < 0) {
-          if (opt->v) {
-            printf("%s", line);
-          }
-        } else {
-          if (opt->n) {
-            printf("%ld:%s", cnt_line, line);
-          }
+    while ((read = getline(&line, &len, fl)) != -1) {
+      int count = 0;
+      int ovector[30];
+      cnt_line++;
+      count = pcre_exec(re, NULL, (char *)line, strlen(line), 0, PCRE_NOTEMPTY,
+                        ovector, 30);
+      if (count < 0) {
+        if (opt->v) {
           printf("%s", line);
         }
+      } else if (!opt->c || !opt->l) {
+        if (cht_files > 1 && !opt->h) {
+          printf("%s:", file_name);
+        }
+        if (opt->n) {
+          printf("%ld:", cnt_line);
+        }
+        printf("%s", line);
+      } else {
+        cnt_if_c++;
       }
     }
   }
   pcre_free((void *)re);
   free(line);
 }
+
+// while ((read = getline(estr, &size, file)) != -1) {
+//   int find = 0;
+//   find = check_pattern(*estr, tmp, grep_flags);
+//   if (!find && !(grep_flags->c || grep_flags->l)) {
+//     if (path_count > 1 && !grep_flags->h) {
+//       printf("%s:", argv[index[h]]);
+//     }
+//     if (grep_flags->n) {
+//       printf("%d:", *str_number);
+//     }
+//     printf("%s", *estr);
+//   } else if (!find) {
+//     (*c_count)++;
+//     (*str_number)++;
+//   }
+// }

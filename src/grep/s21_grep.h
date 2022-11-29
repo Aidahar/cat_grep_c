@@ -31,6 +31,7 @@ void print_field(int argc, struct options *opt);  // временная функ
 void print_opt(struct options *opt);  // временная функция для принта флагов
 void read_file(int argc, int ind, char **argv, struct options *opt,
                pattr *list);
-void read_lines(FILE *fl, struct options *opt, pattr *list);
+void read_lines(FILE *fl, struct options *opt, pattr *list, int cnt_files,
+                char *file_name);
 
 #endif  // SRC_s21_grep_H_
