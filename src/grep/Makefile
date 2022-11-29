@@ -1,14 +1,10 @@
 CC=gcc
 CFLAGS=-Wall -Wextra -Werror -O3 -std=c11
 TEST=-fanalyzer -fsanitize=address -g -pedantic
-VALGRIND=valgrind --tool=memcheck --trace-children=yes --track-fds=yes --track-origins=yes --leak-check=full --show-leak-kinds=all
 
 all: build
 
 build: s21_grep
-
-valgrind_s21_grep:
-	${VALGRIND} ./s21_grep -c bebebe lala.txt
 
 s21_grep_test: s21_grep.o linked_list.o
 	${CC} ${CFLAGS} ${TEST} s21_grep.o linked_list.o -o s21_grep `pcre-config --libs`
@@ -26,4 +22,4 @@ linked_list.o:
 rebuild: clean s21_grep 
 
 clean: 
-	rm *.o s21_grep *.gch
+	rm -rf *.o s21_grep *.gch *.dSYM

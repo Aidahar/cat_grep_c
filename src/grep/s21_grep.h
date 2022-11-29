@@ -24,12 +24,13 @@ struct options {
   unsigned char v : 1;
 };
 
+void check_pattr(pattr **pat, char *list);
+size_t lines_file(FILE *fl);  // счетчик количества строк в файле
 void parse_flags(int argc, char **argv);
 void print_field(int argc, struct options *opt);  // временная функция
+void print_opt(struct options *opt);  // временная функция для принта флагов
 void read_file(int argc, int ind, char **argv, struct options *opt,
                pattr *list);
-void print_opt(struct options *opt);  // временная функция для принта флагов
-size_t lines_file(FILE *fl);  // счетчик количества строк в файле
-void check_pattr(pattr *pat, char *list);
+void read_lines(FILE *fl, struct options *opt, pattr *list);
 
 #endif  // SRC_s21_grep_H_
