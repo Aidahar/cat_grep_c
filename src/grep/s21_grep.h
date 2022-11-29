@@ -30,6 +30,6 @@ void read_file(int argc, int ind, char **argv, struct options *opt,
                pattr *list);
 void print_opt(struct options *opt);  // временная функция для принта флагов
 size_t lines_file(FILE *fl);  // счетчик количества строк в файле
-void check_pattr(pattr *pat, char *list);
+void check_pattr(pattr **pat, char *list);
 
 #endif  // SRC_s21_grep_H_

@@ -15,7 +15,6 @@ void parse_flags(int argc, char **argv) {
   int ch = 0, long_opt = 0;
   struct options opt = {0};
   pattr *list = NULL, *files = NULL;
-  // char *short_options = ":ce:f:hilnotv";
   char *short_options = ":c+e:+f:+h+i+l+n+o+t+v";
   static struct option long_options[] = {{NULL, 0, NULL, 0}};
   while (-1 != (ch = getopt_long(argc, argv, short_options, long_options,
@@ -26,11 +25,11 @@ void parse_flags(int argc, char **argv) {
         break;
       case 'e':  //требует паттерн поиска
         opt.e = 1;
-        check_pattr(list, optarg);
+        check_pattr(&list, optarg);
         break;
       case 'f':  //требуется файл
         opt.f = 1;
-        check_pattr(list, optarg);
+        check_pattr(&list, optarg);
         break;
       case 'h':
         opt.h = 1;
@@ -63,11 +62,11 @@ void parse_flags(int argc, char **argv) {
   if (opt.e) {
     read_file(argc, optind, argv, &opt, list);
   } else {
-    check_pattr(list, argv[optind]);
+    check_pattr(&list, argv[optind]);
     optind++;
     read_file(argc, optind, argv, &opt, list);
   }
-  release(list);
+  // release(list);
   release(files);
 }
 
@@ -102,32 +101,51 @@ void read_file(int argc, int ind, char **argv, struct options *opt,
     FILE *fl = fopen(argv[ind], "r");
     if (fl) {
       char *line = NULL;
-      size_t len, cnt_line, cnt_line_file;
-      len = cnt_line = cnt_line_file = 0;
-      cnt_line_file = lines_file(fl);
+      size_t len = 0, cnt_line = 0, cnt_line_file = lines_file(fl);
       ssize_t read;
+      (void)cnt_line_file;
       fseek(fl, 0, SEEK_SET);
-      while ((read = getline(&line, &len, fl)) != -1) {
-        printf("%s", line);
-        cnt_line++;
-        if (opt->c) {
+      pcre *re;
+      int options = 0;
+      const char *error;
+      int erroffset;
+      re = pcre_compile((char *)list->line, options, &error, &erroffset, NULL);
+      if (!re) {
+        fprintf(stderr, "error pattrn");
+      } else {
+        int count = 0;
+        int ovector[30];
+        display(list);
+        while ((read = getline(&line, &len, fl)) != -1) {
+          cnt_line++;
+          count = pcre_exec(re, NULL, (char *)line, strlen(line), 0,
+                            PCRE_NOTEMPTY, ovector, 30);
+          if (count < 0) {
+          } else {
+            if (opt->n) {
+              printf("%ld:%s", cnt_line, line);
+            }
+          }
         }
       }
+      pcre_free((void *)re);
       free(line);
       fclose(fl);
     } else {
       fprintf(stderr, "grep: %s: No such file or directory", argv[ind]);
       exit(1);
     }
+    (void)opt;
+    (void)list;
+    // display(list);
     ind++;
   }
-  (void)list;
 }
 
 // счетчик количества строк в файле
 size_t lines_file(FILE *fl) {
   size_t cnt = 1;
-  char ch = fgetc(fl);
+  char ch = !EOF;
   while (EOF != ch) {
     if ('\n' == ch) cnt++;
     ch = fgetc(fl);
@@ -136,10 +154,10 @@ size_t lines_file(FILE *fl) {
 }
 
 // проверяем список паттернов
-void check_pattr(pattr *pat, char *list) {
-  if (NULL == pat) {
-    pat = create(list);
+void check_pattr(pattr **pat, char *list) {
+  if (NULL == *pat) {
+    *pat = create(list);
   } else {
-    push_back(&pat, list);
+    push_back(pat, list);
   }
 }
