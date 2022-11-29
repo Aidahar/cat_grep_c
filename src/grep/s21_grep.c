@@ -100,44 +100,15 @@ void read_file(int argc, int ind, char **argv, struct options *opt,
   while (ind < argc) {
     FILE *fl = fopen(argv[ind], "r");
     if (fl) {
-      char *line = NULL;
-      size_t len = 0, cnt_line = 0, cnt_line_file = lines_file(fl);
-      ssize_t read;
-      (void)cnt_line_file;
-      fseek(fl, 0, SEEK_SET);
-      pcre *re;
-      int options = 0;
-      const char *error;
-      int erroffset;
-      re = pcre_compile((char *)list->line, options, &error, &erroffset, NULL);
-      if (!re) {
-        fprintf(stderr, "error pattrn");
-      } else {
-        int count = 0;
-        int ovector[30];
-        display(list);
-        while ((read = getline(&line, &len, fl)) != -1) {
-          cnt_line++;
-          count = pcre_exec(re, NULL, (char *)line, strlen(line), 0,
-                            PCRE_NOTEMPTY, ovector, 30);
-          if (count < 0) {
-          } else {
-            if (opt->n) {
-              printf("%ld:%s", cnt_line, line);
-            }
-          }
-        }
-      }
-      pcre_free((void *)re);
-      free(line);
+      read_lines(fl, opt, list);
       fclose(fl);
     } else {
       fprintf(stderr, "grep: %s: No such file or directory", argv[ind]);
       exit(1);
     }
-    (void)opt;
-    (void)list;
-    // display(list);
+    // (void)opt;
+    // (void)list;
+    // // display(list);
     ind++;
   }
 }
@@ -160,4 +131,59 @@ void check_pattr(pattr **pat, char *list) {
   } else {
     push_back(pat, list);
   }
+}
+
+// читаем построчно файл
+void read_lines(FILE *fl, struct options *opt, pattr *list) {
+  char *line = NULL;
+  size_t len = 0, cnt_line = 0, cnt_if_c = 0, cnt_line_file = lines_file(fl);
+  ssize_t read;
+  (void)cnt_line_file;
+  fseek(fl, 0, SEEK_SET);
+  pcre *re;
+  int options = 0;
+  const char *error;
+  int erroffset;
+  re = pcre_compile((char *)list->line, options, &error, &erroffset, NULL);
+  if (!re) {
+    fprintf(stderr, "error pattrn");
+  } else {
+    int count = 0;
+    int ovector[30];
+    if (opt->c) {
+      while ((read = getline(&line, &len, fl)) != -1) {
+        cnt_line++;
+        count = pcre_exec(re, NULL, (char *)line, strlen(line), 0,
+                          PCRE_NOTEMPTY, ovector, 30);
+        if (count < 0) {
+          if (opt->v) {
+            printf("%s", line);
+          }
+        } else {
+          if (opt->c) {
+            cnt_if_c++;
+          }
+        }
+      }
+      printf("%ld\n", cnt_if_c);
+    } else {
+      while ((read = getline(&line, &len, fl)) != -1) {
+        cnt_line++;
+        count = pcre_exec(re, NULL, (char *)line, strlen(line), 0,
+                          PCRE_NOTEMPTY, ovector, 30);
+        if (count < 0) {
+          if (opt->v) {
+            printf("%s", line);
+          }
+        } else {
+          if (opt->n) {
+            printf("%ld:%s", cnt_line, line);
+          }
+          printf("%s", line);
+        }
+      }
+    }
+  }
+  pcre_free((void *)re);
+  free(line);
 }
