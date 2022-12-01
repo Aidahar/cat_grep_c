@@ -127,10 +127,10 @@ void read_lines(FILE *fl, struct options *opt, pattr *list, int cnt_files,
         printf("%d:", cnt_line);
       }
       printf("%s", line);
-    } else if (0 < count && (opt->c || opt->l)) {
+    } else if (0 < count && opt->c) {
       cnt_if_c++;
+    } else if (0 < count && opt->l) {
       cnt_if_l = 1;
-      //} else if (0 < count && opt->l) {
     }
     print_last(count, cnt_line, cnt_file_line);
     cnt_line++;
@@ -139,7 +139,7 @@ void read_lines(FILE *fl, struct options *opt, pattr *list, int cnt_files,
     flag_l(cnt_files, cnt_if_l, opt, file_name);
   } else if (opt->c && !opt->l) {
     flag_c(cnt_files, cnt_if_c, opt, file_name);
-  } else if (opt->l && !opt->c) {
+  } else if (opt->l) {
     flag_l(cnt_files, cnt_if_l, opt, file_name);
   }
   free(line);
@@ -186,16 +186,9 @@ void flag_c(int cnt_files, int cnt_if_c, struct options *opt, char *file_name) {
 }
 
 void flag_l(int cnt_files, int cnt_if_l, struct options *opt, char *file_name) {
-  if (0 == cnt_if_l) {
-    printf("%s", file_name);
-  } else if (1 < cnt_files && opt->l) {
-    if (cnt_if_l > 0) {
-      printf("%s:%d\n", file_name, cnt_if_l);
-    } else {
-      printf("%s", file_name);
-    }
-  } else if (opt->l && opt->c) {
-    printf("%d\n", cnt_if_l);
+  if (1 < cnt_files && opt->l) {
+    printf("%s:%d\n", file_name, cnt_if_l);
+  } else if (opt->l) {
     printf("%s", file_name);
   }
 }
