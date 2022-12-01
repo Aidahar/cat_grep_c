@@ -1,0 +1,31 @@
+lala.txt:1:Hello
+lala.txt:2:bebe  
+lala.txt:7:KhgjkhdsbeBebe
+lala.txt:8:Lebel
+lala.txt:9:bele
+lala.txt:10:kerela
+lala.txt:11:КерНиганяel
+s21_grep.c:4:  https://github.com/PorterV/s21_SimpleBashUtils/blob/develop/src/grep/s21_grep.c
+s21_grep.c:6:#include "s21_grep.h"
+s21_grep.c:65:  } else {
+s21_grep.c:70:  release(list);
+s21_grep.c:71:  // release(files);
+s21_grep.c:83:    } else {
+s21_grep.c:106:  } else {
+s21_grep.c:129:    } else if (0 < count && opt->c) {
+s21_grep.c:152:    } else {
+s21_grep.c:165:  } else if (!cnt_p_in_l && opt->v) {
+s21_grep.c:167:  } else if (cnt_p_in_l) {
+s21_grep.c:169:  } else {
+s21_grep.c:178:  } else if (opt->c) {
+s21_grep.c:190:// void print_field(int argc, struct options *opt) {
+Makefile:7:build: s21_grep
+Makefile:9:s21_grep_test: s21_grep.o linked_list.o
+Makefile:10:	${CC} ${CFLAGS} ${TEST} s21_grep.o linked_list.o -o s21_grep `pcre-config --libs`
+Makefile:12:s21_grep: s21_grep.o linked_list.o
+Makefile:13:	${CC} ${CFLAGS} s21_grep.o linked_list.o -o s21_grep `pcre-config --libs`
+Makefile:15:s21_grep.o: s21_grep.c s21_grep.h
+Makefile:16:	${CC} ${CFLAGS} s21_grep.c s21_grep.h -c
+Makefile:22:rebuild: clean s21_grep 
+Makefile:24:rebuild_test: clean s21_grep_test
+Makefile:27:	rm -rf *.o s21_grep *.gch *.dSYM

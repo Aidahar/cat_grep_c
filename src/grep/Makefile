@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -Wextra -Werror -O3 -std=c11
+CFLAGS=-Wall -Wextra -Werror -O3 -std=c11 -D_GNU_SOURCE
 TEST=-fanalyzer -fsanitize=address -g -pedantic
 
 all: build
@@ -20,6 +20,8 @@ linked_list.o:
 .PHONY: all clean rebuild
 
 rebuild: clean s21_grep 
+
+rebuild_test: clean s21_grep_test
 
 clean: 
 	rm -rf *.o s21_grep *.gch *.dSYM

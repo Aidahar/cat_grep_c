@@ -112,25 +112,37 @@ void check_pattr(pattr **pat, char *list) {
 void read_lines(FILE *fl, struct options *opt, pattr *list, int cnt_files,
                 char *file_name) {
   char *line = NULL;
-  int count = 0, cnt_if_c = 0;
+  int count = 0, cnt_if_c = 0, cnt_if_l = 0, cnt_line = 1,
+      cnt_file_line = lines_file(fl);
+  fseek(fl, 0, SEEK_SET);
   size_t len = 0;
   ssize_t read;
-  // size_t cnt_line = 0;
-  // cnt_line_file = lines_file(fl);
-  //(void)cnt_line_file;
-  fseek(fl, 0, SEEK_SET);
   while ((read = getline(&line, &len, fl)) != -1) {
     count = compile_pattrn(opt, list, line);
-    if (0 < count && !opt->c) {
+    if (0 < count && !opt->c && !opt->l) {
+      if (1 < cnt_files) {
+        printf("%s:", file_name);
+      }
+      if (opt->n) {
+        printf("%d:", cnt_line);
+      }
       printf("%s", line);
     } else if (0 < count && opt->c) {
       cnt_if_c++;
+    } else if (0 < count && opt->l) {
+      cnt_if_l = 1;
     }
-    // cnt_line++;
+    print_last(count, cnt_line, cnt_file_line);
+    cnt_line++;
   }
-  flag_c(cnt_files, cnt_if_c, opt, file_name);
+  if (opt->c && opt->l) {
+    flag_l(cnt_files, cnt_if_l, opt, file_name);
+  } else if (opt->c && !opt->l) {
+    flag_c(cnt_files, cnt_if_c, opt, file_name);
+  } else if (opt->l) {
+    flag_l(cnt_files, cnt_if_l, opt, file_name);
+  }
   free(line);
-  //(void)cnt_line;
 }
 
 int compile_pattrn(struct options *opt, pattr *list, char *line) {
@@ -173,25 +185,16 @@ void flag_c(int cnt_files, int cnt_if_c, struct options *opt, char *file_name) {
   }
 }
 
-// // Временная функция проверяющая флаг с
-// void print_field(int argc, struct options *opt) {
-//   if (opt->c) {
-//     while (argc >= optind) {
-//       printf("%s\n", optarg);
-//       optind++;
-//     }
-//   }
-// }
-// Временная функция для отображения флагов
-void print_opt(struct options *opt) {
-  printf("opt->c = %d\n", opt->c);
-  printf("opt->e = %d\n", opt->e);
-  printf("opt->f = %d\n", opt->f);
-  printf("opt->h = %d\n", opt->h);
-  printf("opt->i = %d\n", opt->i);
-  printf("opt->l = %d\n", opt->l);
-  printf("opt->n = %d\n", opt->n);
-  printf("opt->o = %d\n", opt->o);
-  printf("opt->t = %d\n", opt->t);
-  printf("opt->v = %d\n", opt->v);
+void flag_l(int cnt_files, int cnt_if_l, struct options *opt, char *file_name) {
+  if (1 < cnt_files && opt->l) {
+    printf("%s:%d\n", file_name, cnt_if_l);
+  } else if (opt->l) {
+    printf("%s", file_name);
+  }
+}
+
+void print_last(int count, int cnt_line, int cnt_file_line) {
+  if (0 < count && cnt_line == cnt_file_line) {
+    printf("\n");
+  }
 }

@@ -26,9 +26,11 @@ struct options {
 void check_pattr(pattr **pat, char *list);
 int compile_pattrn(struct options *opt, pattr *list, char *line);
 void flag_c(int cnt_files, int cnt_if_c, struct options *opt, char *file_name);
+void flag_l(int cnt_files, int cnt_if_l, struct options *opt, char *file_name);
 size_t lines_file(FILE *fl);  // счетчик количества строк в файле
 void parse_flags(int argc, char **argv);
-void print_opt(struct options *opt);  // временная функция для принта флагов
+// void print_opt(struct options *opt);  // временная функция для принта флагов
+void print_last(int count, int cnt_line, int cnt_file_line);
 void read_file(int argc, int ind, char **argv, struct options *opt,
                pattr *list);
 void read_lines(FILE *fl, struct options *opt, pattr *list, int cnt_files,
