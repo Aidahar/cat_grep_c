@@ -3,8 +3,12 @@
 // возвращаем созданный список
 pattr *create(char *lt) {
   pattr *list = malloc(sizeof(pattr));
-  list->line = strdup(lt);
-  list->next = NULL;
+  if (NULL == list) {
+    printf("Memmory can`t be allocated");
+  } else {
+    list->line = strdup(lt);
+    list->next = NULL;
+  }
   return list;
 }
 

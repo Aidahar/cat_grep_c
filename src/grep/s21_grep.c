@@ -15,7 +15,6 @@ void parse_flags(int argc, char **argv) {
   int ch = 0, long_opt = 0;
   struct options opt = {0};
   pattr *list = NULL;
-  // pattr *files = NULL;
   char *short_options = ":c+e:+f:+h+i+l+n+o+t+v";
   static struct option long_options[] = {{NULL, 0, NULL, 0}};
   while (-1 != (ch = getopt_long(argc, argv, short_options, long_options,
@@ -30,7 +29,7 @@ void parse_flags(int argc, char **argv) {
         break;
       case 'f':  //требуется файл
         opt.f = 1;
-        check_pattr(&list, optarg);
+        read_from_f(list, optarg);
         break;
       case 'h':
         opt.h = 1;
@@ -60,6 +59,7 @@ void parse_flags(int argc, char **argv) {
         exit(1);
     }
   }
+  display(list);
   if (opt.e) {
     read_file(argc, optind, argv, &opt, list);
   } else {
@@ -81,10 +81,26 @@ void read_file(int argc, int ind, char **argv, struct options *opt,
       read_lines(fl, opt, list, cnt_f, argv[ind]);
       fclose(fl);
     } else {
-      fprintf(stderr, "grep: %s: No such file or directory", argv[ind]);
-      exit(1);
+      fprintf(stderr, "grep: %s: No such file or directory\n", argv[ind]);
     }
     ind++;
+  }
+}
+
+// читаем из файла паттернов в лист
+void read_from_f(pattr *pat, char *file_name) {
+  FILE *fl = fopen(file_name, "r");
+  if (fl) {
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    while ((read = getline(&line, &len, fl)) != -1) {
+      check_pattr(&pat, line);
+    }
+    free(line);
+    fclose(fl);
+  } else {
+    fprintf(stderr, "grep: %s: No such file or directory\n", file_name);
   }
 }
 
@@ -111,14 +127,13 @@ void check_pattr(pattr **pat, char *list) {
 // читаем построчно файл
 void read_lines(FILE *fl, struct options *opt, pattr *list, int cnt_files,
                 char *file_name) {
-  char *line = NULL;
-  int count = 0, cnt_if_c = 0, cnt_if_l = 0, cnt_line = 1,
-      cnt_file_line = lines_file(fl);
   fseek(fl, 0, SEEK_SET);
+  int cnt_if_c = 0, cnt_if_l = 0, cnt_line = 1, cnt_file_line = lines_file(fl);
+  char *line = NULL;
   size_t len = 0;
   ssize_t read;
   while ((read = getline(&line, &len, fl)) != -1) {
-    count = compile_pattrn(opt, list, line);
+    int count = compile_pattrn(opt, list, line);
     if (0 < count && !opt->c && !opt->l) {
       if (1 < cnt_files) {
         printf("%s:", file_name);

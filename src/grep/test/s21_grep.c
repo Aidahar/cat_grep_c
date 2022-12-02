@@ -112,13 +112,12 @@ void check_pattr(pattr **pat, char *list) {
 void read_lines(FILE *fl, struct options *opt, pattr *list, int cnt_files,
                 char *file_name) {
   char *line = NULL;
-  int count = 0, cnt_if_c = 0, cnt_if_l = 0, cnt_line = 1,
-      cnt_file_line = lines_file(fl);
+  int cnt_if_c = 0, cnt_if_l = 0, cnt_line = 1, cnt_file_line = lines_file(fl);
   fseek(fl, 0, SEEK_SET);
   size_t len = 0;
   ssize_t read;
   while ((read = getline(&line, &len, fl)) != -1) {
-    count = compile_pattrn(opt, list, line);
+    int count = compile_pattrn(opt, list, line);
     if (0 < count && !opt->c && !opt->l) {
       if (1 < cnt_files) {
         printf("%s:", file_name);
