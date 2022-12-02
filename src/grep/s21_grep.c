@@ -136,6 +136,7 @@ void read_lines(FILE *fl, struct options *opt, pattr *list, int cnt_files,
     cnt_line++;
   }
   if (opt->c && opt->l) {
+    flag_c(cnt_files, cnt_if_l, opt, file_name);
     flag_l(cnt_files, cnt_if_l, opt, file_name);
   } else if (opt->c && !opt->l) {
     flag_c(cnt_files, cnt_if_c, opt, file_name);
@@ -151,7 +152,12 @@ int compile_pattrn(struct options *opt, pattr *list, char *line) {
   const char *error;
   for (; list != NULL; list = list->next) {
     pcre *re;
-    re = pcre_compile((char *)list->line, options, &error, &erroffset, NULL);
+    if (opt->i) {
+      re = pcre_compile((char *)list->line, PCRE_CASELESS, &error, &erroffset,
+                        NULL);
+    } else {
+      re = pcre_compile((char *)list->line, options, &error, &erroffset, NULL);
+    }
     if (!re) {
       fprintf(stderr, "error pattrn");
     } else {
@@ -186,18 +192,10 @@ void flag_c(int cnt_files, int cnt_if_c, struct options *opt, char *file_name) {
 }
 
 void flag_l(int cnt_files, int cnt_if_l, struct options *opt, char *file_name) {
-  if (0 == cnt_if_l) {
-    printf("%s", file_name);
-  } else if (1 < cnt_files && opt->l) {
-    if (cnt_if_l > 0) {
-      printf("%s:%d\n", file_name, cnt_if_l);
-    } else {
-      printf("%s", file_name);
-    }
-  } else if (opt->l && opt->c) {
-    printf("%d\n", cnt_if_l);
-    printf("%s", file_name);
+  if (0 < cnt_if_l && opt->l) {
+    printf("%s\n", file_name);
   }
+  (void)cnt_files;
 }
 
 void print_last(int count, int cnt_line, int cnt_file_line) {
