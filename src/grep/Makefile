@@ -1,6 +1,6 @@
 CC=gcc
-CFLAGS=-Wall -Wextra -Werror -O3 -std=c11 -D_GNU_SOURCE
-TEST=-fanalyzer -fsanitize=address -g -pedantic
+CFLAGS=-Wall -Wextra -Werror -O2 -std=c11 -D_GNU_SOURCE
+TEST=-fsanitize=address -g -pedantic
 
 all: build
 

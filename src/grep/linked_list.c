@@ -1,40 +1,40 @@
 #include "linked_list.h"
 
-// возвращаем созданный список
-pattr *create(char *lt) {
-  pattr *list = malloc(sizeof(pattr));
-  if (NULL == list) {
-    printf("Memmory can`t be allocated");
+void create(pattr **pat, char *data) {
+  pattr *tmp = (pattr *)malloc(sizeof(pattr));
+  if (NULL == tmp) {
+    fprintf(stderr, "cant allocate memory");
+    exit(1);
   } else {
-    list->line = strdup(lt);
-    list->next = NULL;
-  }
-  return list;
-}
-
-void display(pattr *start) {
-  pattr *current = start;
-  for (; current != NULL; current = current->next) {
-    printf("line = %s\n", current->line);
+    tmp->line = strdup(data);
+    tmp->next = NULL;
+    (*pat) = tmp;
   }
 }
 
-void push_back(pattr **list, char *pat) {
-  pattr *new_elem = NULL;
-  new_elem = create(pat);
-  pattr *tmp = *list;
-  while (tmp->next != NULL) {
-    tmp = tmp->next;
+void push_back(pattr *pat, char *data) {
+  pattr *new;
+  create(&new, data);
+  pattr *cur = pat;
+  while (NULL != cur->next) {
+    cur = cur->next;
   }
-  tmp->next = new_elem;
+  cur->next = new;
 }
 
-void release(pattr *list) {
-  pattr *old = list;
-  pattr *next = NULL;
-  for (; old != NULL; old = next) {
-    next = old->next;
-    free(old->line);
-    free(old);
+void print_list(pattr *pat) {
+  while (NULL != pat) {
+    printf("%s\n", pat->line);
+    pat = pat->next;
+  }
+}
+
+void release(pattr *pat) {
+  pattr *p = pat;
+  while (NULL != p) {
+    p = pat->next;
+    free(pat->line);
+    free(pat);
+    pat = p;
   }
 }
