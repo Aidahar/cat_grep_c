@@ -3,7 +3,7 @@
 int main(int argc, char **argv) {
   struct options opt = {0};
   parser_flag(argc, argv, &opt);
-  while (argc > optind) {
+  while (optind < argc) {
     reader(argv, &opt);
     optind++;
   }
@@ -29,7 +29,6 @@ void parser_flag(int argc, char **argv, struct options *opt) {
         break;
       case 'E':
         opt->e = 1;
-        opt->v = 1;
         break;
       case 'n':
         opt->n = 1;
@@ -43,7 +42,6 @@ void parser_flag(int argc, char **argv, struct options *opt) {
         break;
       case 'T':
         opt->t = 1;
-        opt->v = 1;
         break;
       case 'v':
         opt->v = 1;
@@ -89,7 +87,7 @@ void reader(char **argv, struct options *opt) {
     }
     fclose(fl);
   } else {
-    fprintf(stderr, "no such file");
+    fprintf(stderr, "cat: %s: No such file or directory", argv[optind]);
   }
 }
 
@@ -101,19 +99,13 @@ void print_b(int *cnt, char const *line) {
 }
 
 void print_e(struct options *opt, int idx, char *line) {
-  if ('\n' == line[idx] && opt->e)
-    printf("$\n");
-  else
-    printf("%c", line[idx]);
+  ('\n' == line[idx] && opt->e) ? printf("$\n") : printf("%c", line[idx]);
 }
 
 void print_n(int cnt) { printf("%6d\t", cnt); }
 
 void print_t(struct options *opt, int idx, char *line) {
-  if ('\t' == line[idx] && opt->t)
-    printf("^I");
-  else
-    printf("%c", line[idx]);
+  ('\t' == line[idx] && opt->t) ? printf("^I") : printf("%c", line[idx]);
 }
 
 void print_v(struct options *opt, int idx, char *line) {

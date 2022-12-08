@@ -1,0 +1,197 @@
+s21_grep.c:/*
+s21_grep.c:  https://lloydrochester.com/post/c/regex_pcre/
+s21_grep.c:  https://ru.wikipedia.org/wiki/PCRE
+s21_grep.c:  https://github.com/PorterV/s21_SimpleBashUtils/blob/develop/src/grep/s21_grep.c
+s21_grep.c:*/
+s21_grep.c:#include "s21_grep.h"
+s21_grep.c:
+s21_grep.c:  parse_flags(argc, argv);
+s21_grep.c:  return 0;
+s21_grep.c:}
+s21_grep.c:
+s21_grep.c:// парсим флаги
+s21_grep.c:void parse_flags(int argc, char **argv) {
+s21_grep.c:  int ch = 0, long_opt = 0;
+s21_grep.c:  struct options opt = {0};
+s21_grep.c:  pattr *list = NULL;
+s21_grep.c:  // pattr *files = NULL;
+s21_grep.c:  char *short_options = ":c+e:+f:+h+i+l+n+o+t+v";
+s21_grep.c:  static struct option long_options[] = {{NULL, 0, NULL, 0}};
+s21_grep.c:  while (-1 != (ch = getopt_long(argc, argv, short_options, long_options,
+s21_grep.c:                                 &long_opt))) {
+s21_grep.c:    switch (ch) {
+s21_grep.c:      case 'c':
+s21_grep.c:        opt.c = 1;
+s21_grep.c:        break;
+s21_grep.c:      case 'e':  //требует паттерн поиска
+s21_grep.c:        opt.e = 1;
+s21_grep.c:        check_pattr(&list, optarg);
+s21_grep.c:        break;
+s21_grep.c:      case 'f':  //требуется файл
+s21_grep.c:        opt.f = 1;
+s21_grep.c:        check_pattr(&list, optarg);
+s21_grep.c:        break;
+s21_grep.c:      case 'h':
+s21_grep.c:        opt.h = 1;
+s21_grep.c:        break;
+s21_grep.c:      case 'i':
+s21_grep.c:        opt.i = 1;
+s21_grep.c:        break;
+s21_grep.c:      case 'l':
+s21_grep.c:        opt.l = 1;
+s21_grep.c:        break;
+s21_grep.c:      case 'n':
+s21_grep.c:        opt.n = 1;
+s21_grep.c:        break;
+s21_grep.c:      case 'o':
+s21_grep.c:        opt.o = 1;
+s21_grep.c:        break;
+s21_grep.c:      case 't':
+s21_grep.c:        opt.t = 1;
+s21_grep.c:        break;
+s21_grep.c:      case 'v':
+s21_grep.c:        opt.v = 1;
+s21_grep.c:        break;
+s21_grep.c:      default:
+s21_grep.c:        fprintf(stderr,
+s21_grep.c:                "usage: grep [-cefhilnotv] [-e "
+s21_grep.c:                "pattern] [-f file] [pattern] [file ...]");
+s21_grep.c:        exit(1);
+s21_grep.c:    }
+s21_grep.c:  }
+s21_grep.c:  if (opt.e) {
+s21_grep.c:    read_file(argc, optind, argv, &opt, list);
+s21_grep.c:  } else {
+s21_grep.c:    check_pattr(&list, argv[optind]);
+s21_grep.c:    optind++;
+s21_grep.c:    read_file(argc, optind, argv, &opt, list);
+s21_grep.c:  }
+s21_grep.c:  release(list);
+s21_grep.c:  // release(files);
+s21_grep.c:}
+s21_grep.c:
+s21_grep.c:// читаем файл
+s21_grep.c:void read_file(int argc, int ind, char **argv, struct options *opt,
+s21_grep.c:               pattr *list) {
+s21_grep.c:  int cnt_f = argc - ind;
+s21_grep.c:  while (ind < argc) {
+s21_grep.c:    FILE *fl = fopen(argv[ind], "r");
+s21_grep.c:    if (fl) {
+s21_grep.c:      read_lines(fl, opt, list, cnt_f, argv[ind]);
+s21_grep.c:      fclose(fl);
+s21_grep.c:    } else {
+s21_grep.c:      fprintf(stderr, "grep: %s: No such file or directory", argv[ind]);
+s21_grep.c:      exit(1);
+s21_grep.c:    }
+s21_grep.c:    ind++;
+s21_grep.c:  }
+s21_grep.c:}
+s21_grep.c:
+s21_grep.c:// счетчик количества строк в файле
+s21_grep.c:size_t lines_file(FILE *fl) {
+s21_grep.c:  size_t cnt = 1;
+s21_grep.c:  char ch = !EOF;
+s21_grep.c:  while (EOF != ch) {
+s21_grep.c:    if ('\n' == ch) cnt++;
+s21_grep.c:    ch = fgetc(fl);
+s21_grep.c:  }
+s21_grep.c:  return cnt;
+s21_grep.c:}
+s21_grep.c:
+s21_grep.c:// проверяем список паттернов
+s21_grep.c:void check_pattr(pattr **pat, char *list) {
+s21_grep.c:  if (NULL == *pat) {
+s21_grep.c:    *pat = create(list);
+s21_grep.c:  } else {
+s21_grep.c:    push_back(pat, list);
+s21_grep.c:  }
+s21_grep.c:}
+s21_grep.c:
+s21_grep.c:// читаем построчно файл
+s21_grep.c:void read_lines(FILE *fl, struct options *opt, pattr *list, int cnt_files,
+s21_grep.c:                char *file_name) {
+s21_grep.c:  char *line = NULL;
+s21_grep.c:  int cnt_if_c = 0, cnt_if_l = 0, cnt_line = 1, cnt_file_line = lines_file(fl);
+s21_grep.c:  fseek(fl, 0, SEEK_SET);
+s21_grep.c:  size_t len = 0;
+s21_grep.c:  ssize_t read;
+s21_grep.c:  while ((read = getline(&line, &len, fl)) != -1) {
+s21_grep.c:    int count = compile_pattrn(opt, list, line);
+s21_grep.c:    if (0 < count && !opt->c && !opt->l) {
+s21_grep.c:      if (1 < cnt_files) {
+s21_grep.c:        printf("%s:", file_name);
+s21_grep.c:      }
+s21_grep.c:      if (opt->n) {
+s21_grep.c:        printf("%d:", cnt_line);
+s21_grep.c:      }
+s21_grep.c:      printf("%s", line);
+s21_grep.c:    } else if (0 < count && opt->c) {
+s21_grep.c:      cnt_if_c++;
+s21_grep.c:    } else if (0 < count && opt->l) {
+s21_grep.c:      cnt_if_l = 1;
+s21_grep.c:    }
+s21_grep.c:    print_last(count, cnt_line, cnt_file_line);
+s21_grep.c:    cnt_line++;
+s21_grep.c:  }
+s21_grep.c:  if (opt->c && opt->l) {
+s21_grep.c:    flag_l(cnt_files, cnt_if_l, opt, file_name);
+s21_grep.c:  } else if (opt->c && !opt->l) {
+s21_grep.c:    flag_c(cnt_files, cnt_if_c, opt, file_name);
+s21_grep.c:  } else if (opt->l) {
+s21_grep.c:    flag_l(cnt_files, cnt_if_l, opt, file_name);
+s21_grep.c:  }
+s21_grep.c:  free(line);
+s21_grep.c:}
+s21_grep.c:
+s21_grep.c:  int options = 0, cnt_p_in_l = 0, count = 0;
+s21_grep.c:  int erroffset;
+s21_grep.c:  const char *error;
+s21_grep.c:  for (; list != NULL; list = list->next) {
+s21_grep.c:    pcre *re;
+s21_grep.c:    re = pcre_compile((char *)list->line, options, &error, &erroffset, NULL);
+s21_grep.c:    if (!re) {
+s21_grep.c:      fprintf(stderr, "error pattrn");
+s21_grep.c:    } else {
+s21_grep.c:      count = 0;
+s21_grep.c:      int ovector[30];
+s21_grep.c:      count = pcre_exec(re, NULL, (char *)line, strlen(line), 0, PCRE_NOTEMPTY,
+s21_grep.c:                        ovector, 30);
+s21_grep.c:      if (0 < count) {
+s21_grep.c:        cnt_p_in_l++;
+s21_grep.c:      }
+s21_grep.c:    }
+s21_grep.c:    pcre_free((void *)re);
+s21_grep.c:  }
+s21_grep.c:  if (cnt_p_in_l && opt->v) {
+s21_grep.c:    count = 0;
+s21_grep.c:  } else if (!cnt_p_in_l && opt->v) {
+s21_grep.c:    count = 1;
+s21_grep.c:  } else if (cnt_p_in_l) {
+s21_grep.c:    count = 1;
+s21_grep.c:  } else {
+s21_grep.c:    count = 0;
+s21_grep.c:  }
+s21_grep.c:  return count;
+s21_grep.c:}
+s21_grep.c:
+s21_grep.c:void flag_c(int cnt_files, int cnt_if_c, struct options *opt, char *file_name) {
+s21_grep.c:  if (1 < cnt_files && opt->c) {
+s21_grep.c:    printf("%s:%d\n", file_name, cnt_if_c);
+s21_grep.c:  } else if (opt->c) {
+s21_grep.c:    printf("%d\n", cnt_if_c);
+s21_grep.c:  }
+s21_grep.c:}
+s21_grep.c:
+s21_grep.c:void flag_l(int cnt_files, int cnt_if_l, struct options *opt, char *file_name) {
+s21_grep.c:  if (1 < cnt_files && opt->l) {
+s21_grep.c:    printf("%s:%d\n", file_name, cnt_if_l);
+s21_grep.c:  } else if (opt->l) {
+s21_grep.c:    printf("%s", file_name);
+s21_grep.c:  }
+s21_grep.c:}
+s21_grep.c:
+s21_grep.c:void print_last(int count, int cnt_line, int cnt_file_line) {
+s21_grep.c:  if (0 < count && cnt_line == cnt_file_line) {
+s21_grep.c:    printf("\n");
+s21_grep.c:  }
+s21_grep.c:}
