@@ -1,0 +1,2 @@
+test_5_grep.txt:    }, out[3] = {98, 110, 115};
+test_5_grep.txt:    return (i == 3 ? '0' : out[i]);
