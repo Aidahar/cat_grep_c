@@ -24,10 +24,16 @@ struct options {
 };
 
 void check_pattr(pattr **pat, char *list);
-int compile_pattrn(struct options *opt, pattr *list, char *line);
+int check_l_v(int cnt_p_in_l, struct options *opt);
+int compile_pattrn(struct options *opt, pattr *list, char *line, int cnt_files,
+                   int cnt_line, char *file_name);
+// int compile_pattrn(struct options *opt, pattr *list, char *line);
 void flag_c(int cnt_files, int cnt_if_c, struct options *opt, char *file_name);
 void flag_l(int cnt_if_l, struct options *opt, char *file_name);
-void flag_o(pcre *re, int count, struct options *opt, int *ovector, char *line);
+// void flag_o(pcre *re, int count, struct options *opt, int *ovector, char
+// *line);
+void flag_o(pcre *re, int count, struct options *opt, int *ovector, char *line,
+            int cnt_files, int cnt_line, char *file_name);
 size_t lines_file(FILE *fl);  // счетчик количества строк в файле
 void parse_flags(int argc, char **argv);
 void print_last(int count, int cnt_line, int cnt_file_line);
