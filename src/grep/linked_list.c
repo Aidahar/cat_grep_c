@@ -13,7 +13,7 @@ void create(pattr **pat, char *data) {
 }
 
 void push_back(pattr *pat, char *data) {
-  pattr *new;
+  pattr *new = NULL;
   create(&new, data);
   pattr *cur = pat;
   while (NULL != cur->next) {
@@ -22,13 +22,13 @@ void push_back(pattr *pat, char *data) {
   cur->next = new;
 }
 
-void print_list(pattr *pat) {
+/* void print_list(pattr *pat) {
   while (NULL != pat) {
     printf("%s\n", pat->line);
     pat = pat->next;
   }
 }
-
+*/
 void release(pattr *pat) {
   pattr *p = pat;
   while (NULL != p) {

@@ -131,4 +131,5 @@ void print_s(struct options *opt, char **line, ssize_t read, size_t size,
     }
     if (*cnt_f == 0) fseek(file, -strlen(*line), SEEK_CUR);
   }
+  (void)read;
 }

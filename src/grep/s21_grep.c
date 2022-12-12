@@ -71,6 +71,12 @@ void flag_o(struct options *opt, char *line, pattr *list) {
   int options = 0, cursor = 0;
   int erroffset;
   const char *error;
+  int len = strlen(line);
+  char estr[len];
+  for (int i = 0; i < len; i++) {
+    estr[i] = line[i];
+  }
+  estr[len] = '\0';
   for (; list != NULL; list = list->next) {
     char *print_pat = malloc(sizeof(char) * (strlen(list->line) + 1));
     if (opt->i) {
@@ -84,19 +90,19 @@ void flag_o(struct options *opt, char *line, pattr *list) {
       int idx_s;
       int idx_end;
       int count = 1;
-      while (cursor < (int)strlen(line) && 0 < count) {
-        count =
-            pcre_exec(re, NULL, line + cursor, strlen(line), 0, 0, ovector, 30);
+      while (cursor < (int)strlen(estr) && 0 < count) {
+        count = pcre_exec(re, NULL, line, strlen(line), 0, 0, ovector, 30);
         if (0 < count) {
           int i = 0;
           idx_s = ovector[0];
           idx_end = ovector[1];
           for (; idx_s < idx_end; idx_s++) {
-            print_pat[i++] = line[idx_s + cursor];
+            print_pat[i++] = line[idx_s];
           }
           print_pat[i] = '\0';
           printf("%s\n", print_pat);
           cursor += idx_end;
+          line += idx_end;
         }
       }
     }
@@ -176,6 +182,7 @@ void parse_flags(int argc, char **argv) {
     optind++;
     read_file(argc, optind, argv, &opt, list);
   }
+  release(files);
   release(list);
 }
 
@@ -187,6 +194,7 @@ void print_last(int count, int cnt_line, int cnt_file_line) {
 void read_from_f(pattr **pat, pattr *files) {
   while (files) {
     if (255 < strlen(files->line)) {
+      release(files);
       fprintf(stderr, "grep: %s: File name too long\n", files->line);
       exit(1);
     } else {
@@ -201,11 +209,13 @@ void read_from_f(pattr **pat, pattr *files) {
             patr[read - 1] = '\0';
           }
           check_pattr(pat, patr);
+          free(patr);
         }
         free(l);
         fclose(fl);
       } else {
         fprintf(stderr, "grep: %s: No such file or directory\n", files->line);
+        release(files);
         exit(1);
       }
       files = files->next;

@@ -12,7 +12,7 @@ typedef struct pattr {
 } pattr;
 
 void create(pattr **pat, char *data);
-void print_list(pattr *start);
+// void print_list(pattr *start);
 void push_back(pattr *list, char *data);
 void release(pattr *list);
 
